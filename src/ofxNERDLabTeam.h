@@ -12,7 +12,11 @@
 class ofxNERDLabTeam {
     
 public:
-    ofxNERDLabTeam();
+
+//    ofxNERDLabTeam(vector<ofxNERDLabPlayer> people);
     int score;
-    vector<ofxNERDLabPlayer> players;
+    vector<ofxNERDLabPlayer> *players;
+    void setScore(int _score);
+    void setScoreName(string _name);
+
 };

@@ -7,3 +7,14 @@
 //
 
 #include "ofxNERDLabTeam.h"
+
+//ofxNERDLabTeam::ofxNERDLabTeam(vector<ofxNERDLabPlayer>) {
+/*
+    ip = _ip;
+    name = _name;
+    score = 0;
+    tag = _tag;
+    client = new ofxOscSender();
+    controlsEnabled = false;
+*/
+// }

@@ -13,19 +13,27 @@ ofxNERDLabPlayer::ofxNERDLabPlayer(string _name, string _ip, int _tag) {
     name = _name;
     score = 0;
     tag = _tag;
+    client = new ofxOscSender();
+    controlsEnabled = false;
 }
 
 
 void ofxNERDLabPlayer::initialize() {
-    client.setup(ip, OFXNERDLAB_CLIENT_PORT);
+    client->setup(ip, OFXNERDLAB_CLIENT_PORT);
+    sendState(OFXNERDLAB_GAME_STATE_WAITING);
+
+}
+
+void ofxNERDLabPlayer::setId() {
     ofxOscMessage msg;
+    cout << "Setting ID, Player Tag is " << tag << endl;
     msg.setAddress("set");
     msg.addStringArg("id");
     msg.addIntArg(tag);
-    msg.setRemoteEndpoint(ip, OFXNERDLAB_CLIENT_PORT);
-    client.sendMessage(msg);
+//    msg.setRemoteEndpoint(ip, OFXNERDLAB_CLIENT_PORT);
+    client->sendMessage(msg);
     msg.clear();
-    
+
 }
 
 void ofxNERDLabPlayer::pause() {
@@ -38,6 +46,24 @@ void ofxNERDLabPlayer::showMessage() {
 
 void ofxNERDLabPlayer::showWaitingScreen() {
     sendState(OFXNERDLAB_GAME_STATE_WAITING);
+}
+
+void ofxNERDLabPlayer::showGameInProgress() {
+    sendState(OFXNERDLAB_GAME_STATE_IN_PROGRESS_CANT_JOIN);
+}
+
+void ofxNERDLabPlayer::rollCall() {
+    sendReaction(OFXNERDLAB_GAME_STATE_ROLL_CALL);
+}
+
+void ofxNERDLabPlayer::pulse() {
+    sendReaction(OFXNERDLAB_REACTION_PULSE);
+    
+}
+
+void ofxNERDLabPlayer::vibrate() {
+    sendReaction(OFXNERDLAB_REACTION_ROLL_CALL);
+    
 }
 
 void ofxNERDLabPlayer::useMovementAsControl() {
@@ -56,30 +82,75 @@ void ofxNERDLabPlayer::useTapAndHoldAsControl() {
 void ofxNERDLabPlayer::useRotationAsControl() {
     sendControl(OFXNERDLAB_GAME_CONTROL_ROTATE);
 }
+void ofxNERDLabPlayer::useRotationAndReleaseAsControl(){
+    sendControl(OFXNERDLAB_GAME_CONTROL_ROTATE_RELEASE);
+}
+
+void ofxNERDLabPlayer::resend(int id, string _name, int gameState, ofColor color) {
+    name = _name;
+    ofxOscMessage msg;
+    msg.setAddress("rejoin");
+    msg.addIntArg(id); //PLAYER ID
+    msg.addIntArg(gameState); //GAME STATE
+    msg.addIntArg(controlScheme); //CONTROLS
+    msg.addIntArg(controlsEnabled); //CONTROLS ENABLED
+    msg.addIntArg(color.r);
+    msg.addIntArg(color.g);
+    msg.addIntArg(color.b);
+    msg.addIntArg(imageNumber);
+    client->sendMessage(msg);
+    msg.clear();
+}
 
 void ofxNERDLabPlayer::useImageSet(int imageSet){
     ofxOscMessage msg;
     msg.setAddress("set");
     msg.addStringArg("images");
     msg.addIntArg(imageSet);
-    client.sendMessage(msg);
+    client->sendMessage(msg);
     msg.clear();
 }
 
-
-void ofxNERDLabPlayer::setPlaying(bool playing) {
+void ofxNERDLabPlayer::setImageNumber(int _imageNumber) {
+    imageNumber = _imageNumber;
     ofxOscMessage msg;
     msg.setAddress("set");
-    msg.addStringArg("playing");
-    if (playing) {
+    msg.addStringArg("image");
+    msg.addIntArg(_imageNumber);
+    client->sendMessage(msg);
+    msg.clear();
+}
+
+void ofxNERDLabPlayer::setControlsEnabled(bool enabled) {
+    ofxOscMessage msg;
+    msg.setAddress("set");
+    msg.addStringArg("control_enabled");
+    if (enabled) {
         msg.addIntArg(1);
+        controlsEnabled = true;
     }
     else {
         msg.addIntArg(0);
+        controlsEnabled = false;
     }
-    client.sendMessage(msg);
+    client->sendMessage(msg);
     msg.clear();
-    sendState(OFXNERDLAB_GAME_STATE_PLAYING);
+//    sendState(OFXNERDLAB_GAME_STATE_PLAYING);
+}
+
+void ofxNERDLabPlayer::setColor(ofColor color) {
+    ofxOscMessage msg;
+    msg.setAddress("set");
+    msg.addStringArg("color");
+    int r = color.r;
+    int g = color.g;
+    int b = color.b;
+    
+    msg.addIntArg(r);
+    msg.addIntArg(g);
+    msg.addIntArg(b);
+    client->sendMessage(msg);
+    msg.clear();
 }
 
 void ofxNERDLabPlayer::sendState(int state) {
@@ -87,41 +158,86 @@ void ofxNERDLabPlayer::sendState(int state) {
     msg.setAddress("set");
     msg.addStringArg("state");
     msg.addIntArg(state);
-    client.sendMessage(msg);
+    client->sendMessage(msg);
     msg.clear();
 }
 
+void ofxNERDLabPlayer::sendReaction(int reaction) {
+    ofxOscMessage msg;
+    msg.setAddress("set");
+    msg.addStringArg("reaction");
+    msg.addIntArg(reaction);
+    client->sendMessage(msg);
+    msg.clear();
+}
 
 void ofxNERDLabPlayer::sendControl(int control) {
     ofxOscMessage msg;
     msg.setAddress("set");
     msg.addStringArg("control");
     msg.addIntArg(control);
-    client.sendMessage(msg);
+    controlScheme = control;
+    client->sendMessage(msg);
     msg.clear();
 
 }
 
-void ofxNERDLabPlayer::sendScore(int score) {
+void ofxNERDLabPlayer::setScore(int _score) {
+    score = _score;
     ofxOscMessage msg;
     msg.setAddress("set");
     msg.addStringArg("score");
-    msg.addIntArg(score);
-    client.sendMessage(msg);
+    msg.addIntArg(_score);
+    client->sendMessage(msg);
+    msg.clear();
 }
 
-void ofxNERDLabPlayer::sendGameName(string gameName) {
+void ofxNERDLabPlayer::setScoreName(string _name) {
+    scoreName = _name;
     ofxOscMessage msg;
     msg.setAddress("set");
-    msg.addStringArg("game");
-    msg.addStringArg(gameName);
-    client.sendMessage(msg);
+    msg.addStringArg("score_name");
+    msg.addStringArg(_name);
+    client->sendMessage(msg);
+    msg.clear();
 }
 
-void ofxNERDLabPlayer::sendMessage(string message) {
+
+void ofxNERDLabPlayer::sendTimeUntilNextGame(int seconds) {
     ofxOscMessage msg;
     msg.setAddress("set");
-    msg.addStringArg("instructions");
+    msg.addStringArg("wait");
+    msg.addIntArg(seconds);
+    client->sendMessage(msg);
+}
+
+void ofxNERDLabPlayer::sendInGameStatus(string status) {
+    ofxOscMessage msg;
+    msg.setAddress("set");
+    msg.addStringArg("status");
+    msg.addStringArg(status);
+    client->sendMessage(msg);
+}
+
+void ofxNERDLabPlayer::sendInGameMessage(string message) {
+    ofxOscMessage msg;
+    msg.setAddress("set");
+    msg.addStringArg("ingamemessage");
     msg.addStringArg(message);
-    client.sendMessage(msg);
+    client->sendMessage(msg);
+}
+
+void ofxNERDLabPlayer::sendOutOfGameMessage(string message) {
+    cout << "Sending Message to " << ip << endl;
+//    client->setup(ip, OFXNERDLAB_CLIENT_PORT);
+
+    ofxOscMessage msg;
+    msg.setAddress("set");
+    msg.addStringArg("outgamemessage");
+    msg.addStringArg(message);
+    cout << "Message Packaged" << endl;
+    msg.setRemoteEndpoint(ip, OFXNERDLAB_CLIENT_PORT);
+    client->sendMessage(msg);
+    msg.clear();
+    cout << "Message Sent" << endl;
 }

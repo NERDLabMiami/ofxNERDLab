@@ -13,9 +13,17 @@ class ofxNERDLabEvent {
     string ip;
 };
 
+class ofxNERDLabRollCalled {
+    public:
+    int players;
+    float time;
+};
+
 class ofxNERDLabJoinEvent : public ofxNERDLabEvent {
     public:
     string name;
+    int team_id;
+    int player_id;
 
 };
 
