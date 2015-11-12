@@ -27,6 +27,11 @@ class ofxNERDLabJoinEvent : public ofxNERDLabEvent {
 
 };
 
+class ofxNERDLabMessageEvent : public ofxNERDLabEvent {
+    public:
+    int player_id;
+};
+
 class ofxNERDLabQuitEvent : public ofxNERDLabEvent {
     public:
     int id;

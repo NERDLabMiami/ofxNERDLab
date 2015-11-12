@@ -27,6 +27,7 @@
 #define OFXNERDLAB_GAME_CONTROL_TAP                 3
 #define OFXNERDLAB_GAME_CONTROL_ROTATE              4
 #define OFXNERDLAB_GAME_CONTROL_ROTATE_RELEASE      5
+#define OFXNERDLAB_GAME_CONTROL_NOTHING             6
 
 #define OFXNERDLAB_REACTION_PULSE                   0
 #define OFXNERDLAB_REACTION_ROLL_CALL               1
@@ -52,7 +53,9 @@ public:
     int score;
     string scoreName;
     int imageNumber;
+    int currentImageSet;
     ofPoint lastPoint;
+    ofColor playerColor;
     bool connected;
     void initialize();
     
@@ -73,9 +76,12 @@ public:
     void pulse();
     void vibrate();
     
+    void startWithParameters(int imageSet, int imageNum, ofColor color, string scoreName, int startScore, int control);
+
     void useImageSet(int imageSet);
     void setImageNumber(int imageNum);
     void setId();
+    void sendBackground(int background);
     void setColor(ofColor color);
     void sendState(int state);
     void sendReaction(int reaction);
@@ -87,5 +93,6 @@ public:
     void setScore(int _score);
     void setScoreName(string _name);
     void resend(int id, string name, int gameState, ofColor color);
+    void confirm_message(string message);
     
 };

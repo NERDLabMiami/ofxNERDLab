@@ -20,7 +20,7 @@ ofxNERDLabPlayer::ofxNERDLabPlayer(string _name, string _ip, int _tag) {
 
 void ofxNERDLabPlayer::initialize() {
     client->setup(ip, OFXNERDLAB_CLIENT_PORT);
-    sendState(OFXNERDLAB_GAME_STATE_WAITING);
+//    sendState(OFXNERDLAB_GAME_STATE_WAITING);
 
 }
 
@@ -85,11 +85,21 @@ void ofxNERDLabPlayer::useRotationAsControl() {
 void ofxNERDLabPlayer::useRotationAndReleaseAsControl(){
     sendControl(OFXNERDLAB_GAME_CONTROL_ROTATE_RELEASE);
 }
+void ofxNERDLabPlayer::sendBackground(int background) {
+
+    ofxOscMessage msg;
+    msg.setAddress("/set");
+    msg.addStringArg("background");
+    msg.addIntArg(background);
+    client->sendMessage(msg);
+    msg.clear();
+
+}
 
 void ofxNERDLabPlayer::resend(int id, string _name, int gameState, ofColor color) {
     name = _name;
     ofxOscMessage msg;
-    msg.setAddress("rejoin");
+    msg.setAddress("/rejoin");
     msg.addIntArg(id); //PLAYER ID
     msg.addIntArg(gameState); //GAME STATE
     msg.addIntArg(controlScheme); //CONTROLS
@@ -97,14 +107,47 @@ void ofxNERDLabPlayer::resend(int id, string _name, int gameState, ofColor color
     msg.addIntArg(color.r);
     msg.addIntArg(color.g);
     msg.addIntArg(color.b);
+    msg.addIntArg(currentImageSet);
     msg.addIntArg(imageNumber);
     client->sendMessage(msg);
     msg.clear();
 }
+void ofxNERDLabPlayer::startWithParameters(int imageSet, int imageNum, ofColor color, string scoreDescription, int startScore, int control) {
+    currentImageSet = imageSet;
+    imageNumber = imageNum;
+    playerColor = color;
+    scoreName = scoreDescription;
+    score = startScore;
+    controlScheme = control;
+    ofxOscMessage msg;
+    msg.setAddress("/start");
+    msg.addIntArg(tag);
+    msg.addIntArg(currentImageSet);
+    msg.addIntArg(imageNumber);
+    msg.addStringArg(scoreName);
+    msg.addIntArg(score);
+    msg.addIntArg(playerColor.r);
+    msg.addIntArg(playerColor.g);
+    msg.addIntArg(playerColor.b);
+    msg.addIntArg(controlScheme);
+    client->sendMessage(msg);
+    msg.clear();
+    
+}
+
+void ofxNERDLabPlayer::confirm_message(string message) {
+    ofxOscMessage msg;
+    msg.setAddress("/confirmed");
+    msg.addStringArg(message);
+    client->sendMessage(msg);
+    msg.clear();
+}
+
 
 void ofxNERDLabPlayer::useImageSet(int imageSet){
+    currentImageSet = imageSet;
     ofxOscMessage msg;
-    msg.setAddress("set");
+    msg.setAddress("/set");
     msg.addStringArg("images");
     msg.addIntArg(imageSet);
     client->sendMessage(msg);
@@ -114,7 +157,7 @@ void ofxNERDLabPlayer::useImageSet(int imageSet){
 void ofxNERDLabPlayer::setImageNumber(int _imageNumber) {
     imageNumber = _imageNumber;
     ofxOscMessage msg;
-    msg.setAddress("set");
+    msg.setAddress("/set");
     msg.addStringArg("image");
     msg.addIntArg(_imageNumber);
     client->sendMessage(msg);
@@ -123,7 +166,7 @@ void ofxNERDLabPlayer::setImageNumber(int _imageNumber) {
 
 void ofxNERDLabPlayer::setControlsEnabled(bool enabled) {
     ofxOscMessage msg;
-    msg.setAddress("set");
+    msg.setAddress("/set");
     msg.addStringArg("control_enabled");
     if (enabled) {
         msg.addIntArg(1);
@@ -140,7 +183,7 @@ void ofxNERDLabPlayer::setControlsEnabled(bool enabled) {
 
 void ofxNERDLabPlayer::setColor(ofColor color) {
     ofxOscMessage msg;
-    msg.setAddress("set");
+    msg.setAddress("/set");
     msg.addStringArg("color");
     int r = color.r;
     int g = color.g;
@@ -155,7 +198,7 @@ void ofxNERDLabPlayer::setColor(ofColor color) {
 
 void ofxNERDLabPlayer::sendState(int state) {
     ofxOscMessage msg;
-    msg.setAddress("set");
+    msg.setAddress("/set");
     msg.addStringArg("state");
     msg.addIntArg(state);
     client->sendMessage(msg);
@@ -164,7 +207,7 @@ void ofxNERDLabPlayer::sendState(int state) {
 
 void ofxNERDLabPlayer::sendReaction(int reaction) {
     ofxOscMessage msg;
-    msg.setAddress("set");
+    msg.setAddress("/set");
     msg.addStringArg("reaction");
     msg.addIntArg(reaction);
     client->sendMessage(msg);
@@ -173,11 +216,12 @@ void ofxNERDLabPlayer::sendReaction(int reaction) {
 
 void ofxNERDLabPlayer::sendControl(int control) {
     ofxOscMessage msg;
-    msg.setAddress("set");
+    msg.setAddress("/set");
     msg.addStringArg("control");
     msg.addIntArg(control);
     controlScheme = control;
     client->sendMessage(msg);
+    
     msg.clear();
 
 }
@@ -185,7 +229,7 @@ void ofxNERDLabPlayer::sendControl(int control) {
 void ofxNERDLabPlayer::setScore(int _score) {
     score = _score;
     ofxOscMessage msg;
-    msg.setAddress("set");
+    msg.setAddress("/set");
     msg.addStringArg("score");
     msg.addIntArg(_score);
     client->sendMessage(msg);
@@ -195,7 +239,7 @@ void ofxNERDLabPlayer::setScore(int _score) {
 void ofxNERDLabPlayer::setScoreName(string _name) {
     scoreName = _name;
     ofxOscMessage msg;
-    msg.setAddress("set");
+    msg.setAddress("/set");
     msg.addStringArg("score_name");
     msg.addStringArg(_name);
     client->sendMessage(msg);
@@ -205,7 +249,7 @@ void ofxNERDLabPlayer::setScoreName(string _name) {
 
 void ofxNERDLabPlayer::sendTimeUntilNextGame(int seconds) {
     ofxOscMessage msg;
-    msg.setAddress("set");
+    msg.setAddress("/set");
     msg.addStringArg("wait");
     msg.addIntArg(seconds);
     client->sendMessage(msg);
@@ -213,7 +257,7 @@ void ofxNERDLabPlayer::sendTimeUntilNextGame(int seconds) {
 
 void ofxNERDLabPlayer::sendInGameStatus(string status) {
     ofxOscMessage msg;
-    msg.setAddress("set");
+    msg.setAddress("/set");
     msg.addStringArg("status");
     msg.addStringArg(status);
     client->sendMessage(msg);
@@ -221,7 +265,7 @@ void ofxNERDLabPlayer::sendInGameStatus(string status) {
 
 void ofxNERDLabPlayer::sendInGameMessage(string message) {
     ofxOscMessage msg;
-    msg.setAddress("set");
+    msg.setAddress("/set");
     msg.addStringArg("ingamemessage");
     msg.addStringArg(message);
     client->sendMessage(msg);
@@ -232,7 +276,7 @@ void ofxNERDLabPlayer::sendOutOfGameMessage(string message) {
 //    client->setup(ip, OFXNERDLAB_CLIENT_PORT);
 
     ofxOscMessage msg;
-    msg.setAddress("set");
+    msg.setAddress("/set");
     msg.addStringArg("outgamemessage");
     msg.addStringArg(message);
     cout << "Message Packaged" << endl;

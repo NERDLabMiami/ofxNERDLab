@@ -95,7 +95,7 @@ void ofxNERDLab::rollcall() {
 
 }
 void ofxNERDLab::createFakePlayer() {
-    ofxNERDLabPlayer newPlayer = ofxNERDLabPlayer("FP #" + ofToString(players.size()), "10.10.10.10", players.size());
+    ofxNERDLabPlayer newPlayer = ofxNERDLabPlayer("Fake Player No. " + ofToString(players.size()+1), "127.0.0.1", players.size());
     newPlayer.initialize();
     cout << "Creating Player with Tag " << newPlayer.tag << endl;
     players.push_back(newPlayer);
@@ -217,6 +217,19 @@ void ofxNERDLab::threadedFunction() {
                         ofNotifyEvent(clientRequest, e);
 
                     }
+                    else {
+                        //trying to rejoin
+                        cout << "Got a rejoin" << endl;
+                        for (int i = 0; i < players.size(); i++) {
+                            if (ip == players[i].ip) {
+                                e.player_id = players[i].tag;
+                                cout << "matched ip internally, sending join notification";
+                                ofNotifyEvent(clientRequest, e);
+                                break;
+                            }
+                                
+                        }
+                    }
                     
                 }
             }
@@ -228,6 +241,12 @@ void ofxNERDLab::threadedFunction() {
                 e.ip = ip;
                 ofNotifyEvent(clientAlive, e);
 
+            }
+            if (msg.getAddress() == "/confirm") {
+                ofxNERDLabMessageEvent e;
+                e.ip = ip;
+                e.player_id = msg.getArgAsInt32(0);
+                ofNotifyEvent(clientConfirm, e);
             }
             
             if (msg.getAddress() == "/hello") {
@@ -301,6 +320,13 @@ void ofxNERDLab::threadedFunction() {
                 e.x = msg.getArgAsFloat(1);
                 e.y = msg.getArgAsFloat(2);
                 ofNotifyEvent(receivedAccelerometer, e);
+            }
+            
+            if (msg.getAddress() == "/shake") {
+                ofxNERDLabAccelerometerEvent e;
+                e.ip = ip;
+                e.id = msg.getArgAsInt32(0);
+                ofNotifyEvent(receivedShake, e);
             }
             
             //AUDIO INPUT

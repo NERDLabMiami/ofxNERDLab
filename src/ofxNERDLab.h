@@ -56,6 +56,7 @@ class ofxNERDLab : public ofThread {
 
         ofEvent<ofxNERDLabJoinEvent> clientRequest; //internal? still available in case they want to customize?
         ofEvent<ofxNERDLabEvent> clientAlive; //internal?
+        ofEvent<ofxNERDLabMessageEvent> clientConfirm;
         ofEvent<ofxNERDLabJoinEvent> clientRejoin;
         ofEvent<ofxNERDLabQuitEvent> playerQuit; //internal? or managed but available?
     
@@ -67,6 +68,7 @@ class ofxNERDLab : public ofThread {
         ofEvent<ofxNERDLabTapEvent> receivedTap;
         ofEvent<ofxNERDLabReleaseEvent> receivedRelease;
         ofEvent<ofxNERDLabAccelerometerEvent> receivedAccelerometer;
+        ofEvent<ofxNERDLabAccelerometerEvent> receivedShake;
         ofEvent<ofxNERDLabAudioInputEvent> receivedAudioInput;
     private:
     float nextRollCall;
