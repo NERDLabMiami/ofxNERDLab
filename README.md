@@ -7,6 +7,6 @@ There are a lot of OSC controllers out there for your smart phone, but the NERDL
 
 It's still a work in progress, feedback is very welcome.
 
-##Requirements
+## Requirements
 
 ofxOSC
